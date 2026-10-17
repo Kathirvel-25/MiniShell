@@ -3,6 +3,7 @@
 #include "executer.h"
 #include "signal.h"
 
+
 static void handle_signal(int signo)
 {
     
@@ -10,7 +11,6 @@ static void handle_signal(int signo)
     else if(signo == SIGTERM) printf("Caugth SIGTERM\n");
     exit(EXIT_SUCCESS);
 }
-
 
 void Shell_main(void)
 {
@@ -72,6 +72,8 @@ void Shell_main(void)
 
         token[idx] = NULL;
 
+        
+
         for(int i = 0; token[i] != NULL; i++)
         {
             if(my_strcmp(token[i], ">") == 0) 
@@ -79,9 +81,16 @@ void Shell_main(void)
                 redirect = 1;
                 break;
             }
+
+            if(my_strcmp(token[i], "|") == 0)
+            {
+                redirect = 2;
+                break;
+            }
         }
 
         if(redirect == 1) func_dup(idx, token);
+        else if(redirect == 2) pipes(idx, token);
         else shell_builts(token);
     }
 }
