@@ -2,6 +2,15 @@
 
 extern char** environ;
 
+
+
+static void get_env(char *str)
+{
+    char *path = getenv(str);
+
+    if(path != NULL) printf("%s\n", path);
+}
+
 void display_enviroment(void)
 {
     char** ev;
@@ -13,8 +22,6 @@ void display_enviroment(void)
     printf("\n");
 }
 
-
-
 void folder_creation(char *name)
 {
     if(mkdir(name, 0777) == -1)
@@ -25,8 +32,6 @@ void folder_creation(char *name)
     printf("Folder creation succesfully\n");
 }
 
-
-
 void remove_folder(char *args)
 {
     if(rmdir(args) == -1)
@@ -35,8 +40,6 @@ void remove_folder(char *args)
         return;
     }
 }
-
-
 
 void show_file(char* args[])
 {
@@ -133,4 +136,130 @@ void func_dup(int idx, char *token[])
     }
 
     else waitpid(pid, NULL, 0);
+}
+
+void pipes(int idx, char* token[])
+{
+    char* first[idx];
+    int i = 0;
+    char* second[idx];
+    int k = 0;
+
+
+    for(i = 0; token[i] != NULL && i < idx; i++)
+    {
+        if(my_strcmp(token[i], "|") == 0) break;
+        first[i] = token[i];
+    }
+
+    first[i] = NULL;
+
+    for(int j = i + 1; token[j] != NULL && j < idx; j++)
+        second[k++] = token[j];
+
+    second[k] = NULL;
+
+    int fd[2];
+
+    if(pipe(fd) == -1)
+    {
+        perror("Error: pipe\n");
+        return;
+    }
+    
+    pid_t pid1 = fork();
+
+    if(pid1 == -1)
+    {
+        perror("Error: process creation\n");
+        return;
+    }
+
+    if(pid1 == 0)
+    {
+        if(dup2(fd[1], STDOUT_FILENO) == -1)
+        {
+            perror("Error: dup2\n");
+            exit(1);
+        }
+
+        close(fd[0]);
+        close(fd[1]);
+
+        execvp(first[0], first);
+
+        printf("Error: execvp\n");
+        exit(1);
+    }
+
+    else
+    {
+        pid_t pid2 = fork();
+
+        if(pid2 == -1)
+        {
+            perror("Error: process2 creation\n");
+            return;
+        }
+
+        if(pid2 == 0)
+        {
+
+            if(dup2(fd[0], STDIN_FILENO) == -1)
+            {
+                perror("Error: dup\n");
+                exit(1);
+            }
+
+            close(fd[0]);
+            close(fd[1]);
+
+            execvp(second[0], second);
+
+            printf("Error: execvp\n");
+
+            exit(1);
+        }
+
+        close(fd[0]);
+        close(fd[1]);
+
+        waitpid(pid1, NULL, 0);
+        waitpid(pid2, NULL, 0);
+    }
+}
+
+void echo(char *args[])
+{
+    int redir = -1;
+    int i = 0;
+
+    for(i = 0; args[i] != NULL; i++)
+    {
+        if(args[i][0] == '$')
+        {
+            redir = 1;
+            break;
+        }
+    }
+
+    if(redir == 1)
+    {
+        char *var = args[i];
+        var++;
+        get_env(var);
+    }
+    else
+    {
+        show_file(args);
+    }
+}
+
+void my_setenv(char *str1, char *str2)
+{
+    if(setenv(str1, str2, 1) == -1)
+    {
+        perror("Error: setenv\n");
+        return;
+    }
 }
