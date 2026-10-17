@@ -30,8 +30,8 @@ void shell_builts(char *args[])
     else if((my_strcmp(args[0], "ls")) == 0) show_file(args);
     else if((my_strcmp(args[0], "cd")) == 0) change_directory(args[1]);
     else if((my_strcmp(args[0], "cat")) == 0)  show_file(args);
-    else
-    {
-        printf("Error: Invalid command type help for the valid command\n");
-    }
+    else if((my_strcmp(args[0], "echo")) == 0) echo(args);
+    else if((my_strcmp(args[0], "setenv")) == 0) my_setenv(args[1], args[3]);
+    else printf("Error: Invalid command type help for the valid command\n");
+    
 }
