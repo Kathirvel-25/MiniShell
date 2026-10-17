@@ -19,6 +19,9 @@ void show_file(char* args[]);
 void change_directory(char *dir);
 void my_cat(char *file);
 void func_dup(int idx, char *token[]);
+void pipes(int idx, char* token[]);
+void echo(char *args[]);
+void my_setenv(char *str1, char *str2);
 
 
 #endif
